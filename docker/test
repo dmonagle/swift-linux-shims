@@ -1,0 +1,31 @@
+#!/bin/bash
+DEFAULT_SWIFT_VERSION=3.1.1
+
+if [ -f /.dockerenv ]; then
+    BUILD_TYPE=${1:-debug}
+    cd /project
+    echo Testing for $BUILD_TYPE...
+
+    swift package fetch
+    swift test --configuration $BUILD_TYPE --build-path ./.build/linux 
+else
+    CMD="/project/docker/test"
+    BUILD_TYPE=${1:-release}
+    SWIFT_VERSION=${2:-$DEFAULT_SWIFT_VERSION}
+    ARGS=${@:3}
+
+    # Create the test network if it's not already there
+    docker network create swift-test
+
+    # Start the docker container
+    echo Starting geo-swift:$SWIFT_VERSION container...
+    IMAGE=ibmcom/swift-ubuntu:$SWIFT_VERSION
+    CONTAINER=swift-test
+    mkdir -p tmp
+    docker rm $CONTAINER 
+    docker run -it --privileged --rm \
+        --name $CONTAINER \
+        -v "$PWD":/project \
+	--net swift-test \
+        $IMAGE $CMD $ARGS
+fi
