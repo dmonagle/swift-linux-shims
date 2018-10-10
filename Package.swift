@@ -2,5 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "LinuxShims"
+    name: "LinuxShims",
+    products: [
+        .library(name: "LinuxShims", targets: ["LinuxShims"])
+    ],
+    targets: [
+        .target(name: "LinuxShims"),
+    ]
 )
